@@ -1,0 +1,43 @@
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+venv/
+env/
+.venv/
+Pipfile.lock
+
+# Jupyter Notebooks / Google Colab
+.ipynb_checkpoints/
+
+
+# SPECTRA-CQ Project Specific
+#ignore large data files and model weights (these live in Colab/Drive)
+data/raw/*
+data/processed/*
+data/metadata/*
+results/checkpoints/*.pt
+
+# EXCEPTIONS: Keep the directory structures intact in Git
+#(Make sure to create an empty file named '.gitkeep' in these folders)
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/metadata/.gitkeep
+!results/checkpoints/.gitkeep
