@@ -29,7 +29,7 @@ Pipfile.lock
 
 
 # SPECTRA-CQ Project Specific
-#ignore large data files and model weights (these live in Colab/Drive)
+# Ignore large data files and model weights (these live in Colab/Drive)
 data/raw/*
 data/processed/*
 data/metadata/*
@@ -41,3 +41,14 @@ results/checkpoints/*.pt
 !data/processed/.gitkeep
 !data/metadata/.gitkeep
 !results/checkpoints/.gitkeep
+
+# Dataset specific rules: ignore files, but keep directory structure and .md/.pdf
+data/2024-02-01_2024-10-31_ida_ki_export/**/*
+!data/2024-02-01_2024-10-31_ida_ki_export/**/
+!data/2024-02-01_2024-10-31_ida_ki_export/**/*.md
+!data/2024-02-01_2024-10-31_ida_ki_export/**/*.pdf
+
+data/20250506_openLAB_tests/**/*
+!data/20250506_openLAB_tests/**/
+!data/20250506_openLAB_tests/**/*.md
+!data/20250506_openLAB_tests/**/*.pdf

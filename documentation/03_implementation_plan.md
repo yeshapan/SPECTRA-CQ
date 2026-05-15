@@ -10,6 +10,8 @@ The openLAB dataset provides triggered acceleration measurements within the 01_a
 * **1. Parsing the Raw Signals**
     The extraction script sequentially iterates through the 523 CSV files. Using optimized data-handling libraries like Pandas, it parses the ISO 8601 UTC timestamps. It then isolates the vertical acceleration columns for specific precast elements (e.g., G_ACCZ_PE11_CB0750_0), which represent the structural response measured in m/s².
 
+    Because the openLAB researchers have already applied a baseline median subtraction and a fourth-order Butterworth bandpass filter (0.5 Hz – 100 Hz) to these files, the extracted signals are already clear of low-frequency drift and high-frequency anti-aliasing artifacts, allowing us to proceed directly to time-frequency transformation.
+
 * **2. Baseline Establishment and Anomaly Thresholding**
     Because the current openLAB repository exclusively contains data from the undamaged reference phase, standard supervised binary classification is impossible. Instead, we implement a semi-supervised anomaly detection framework. The script assigns all 70-second windows in this dataset a ground-truth label of 0 (Healthy Baseline). By training the architecture strictly on this undamaged data, the network will learn the precise topological boundaries of normal structural behavior. When subsequent openLAB datasets containing induced damage are published, the model will classify any signal falling outside these learned boundaries as a structural anomaly.
 

@@ -3,7 +3,7 @@
 ### 1. **The Nature of Structural Vibration Data**
 Vibration data collected from full-scale civil infrastructure (such as the openLAB bridge) possesses specific characteristics that dictate the required modeling architecture:
 
-* **High Dimensionality**: Sampled at high frequencies (e.g., $100\text{ Hz}$ to $500\text{ Hz}$). So a mere 10-second structural event generates thousands of discrete data points.
+* **High Dimensionality**: Sampled at high frequencies (e.g., $100\text{ Hz}$ to $500\text{ Hz}$). So a standard 70-second structural event generates tens of thousands of discrete data points (e.g., 35000 points at $500\text{ Hz}$). 
 * **Non-Stationarity**: Traffic-induced or seismic excitations cause the statistical properties of the vibration signal to change over time. The frequency content is not static.
 * **Low Signal-to-Noise Ratio (SNR)**: Damage signatures (e.g., micro-cracking causes a slight loss of stiffness) manifest as minute frequency shifts buried under massive environmental and ambient noise.
 
