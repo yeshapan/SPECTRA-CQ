@@ -2,8 +2,8 @@ name: Deploy Interactive Visuals to Pages
 
 on:
   push:
-    branches: ["main"] # Triggers deployment every time you push to main
-  workflow_dispatch: # Allows you to manually trigger it from the Actions tab
+    branches: ["main"] 
+  workflow_dispatch: 
 
 permissions:
   contents: read
@@ -18,7 +18,8 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps: deployment.outputs.page_url }}
+      # FIX: Changed colon to a period after 'steps'
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,7 +31,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Crucial step: Point this exactly to your custom folder!
           path: './interactive_visuals'
 
       - name: Deploy to GitHub Pages
