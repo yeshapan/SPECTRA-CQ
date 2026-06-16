@@ -24,19 +24,19 @@ env/
 .venv/
 Pipfile.lock
 
-# Jupyter Notebooks / Google Colab
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data & Notebook checkpoints
+data/
+*.npy
+*.csv
+*.h5
 .ipynb_checkpoints/
 
-
-# SPECTRA-CQ Project Specific
-# Ignore everything inside dataset folders (because the files are too large to upload on github)
-data/2024-02-01_2024-10-31_ida_ki_export/**/*
-data/20250506_openLAB_tests/**/*
-
-# Keep directory structure
-!data/2024-02-01_2024-10-31_ida_ki_export/**/
-!data/20250506_openLAB_tests/**/
-
-# Keep markdown/readme files
-!data/2024-02-01_2024-10-31_ida_ki_export/**/*.md
-!data/20250506_openLAB_tests/**/*.md
+# PyTorch Model Weights
+*.pt
+*.pth
+models/saved_weights/
