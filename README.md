@@ -34,9 +34,9 @@ SPECTRA-CQ/
 │   ├── 03_train_quantum.ipynb      # Colab execution wrapper for hybrid quantum model
 │   └── 04_result_analysis.ipynb    # Evaluation metrics, ROC curves, MSE thresholding
 │
-├── documentation/                  # Documentation
-│   ├── ARCHITECTURE.md             # Mathematical formulation of the Hybrid QAE
-│   └── EXPERIMENT_LOGS.md          # Formal record of the 3-seed, 15-epoch protocol runs
+├── docs/                           # Documentation
+│   ├── DATASET.md                  # Dataset characteristics
+│   └── PIPELINE.md                 # Data processing pipeline
 │
 ├── src/                            # Core Source Code
 │   ├── init.py
