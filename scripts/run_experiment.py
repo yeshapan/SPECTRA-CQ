@@ -11,6 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.data.dataloader import get_dataloaders
 from src.models.classical.cae import ClassicalAutoencoder
+from src.models.hybrid.hqae import HybridQuantumAutoencoder
 from src.engine.trainer import AutoencoderTrainer
 from src.engine.seed_control import set_deterministic_state
 
@@ -46,7 +47,16 @@ def main(config_path: str):
             train_split=config["train_split"]
         )
         
-        model = ClassicalAutoencoder(latent_dim=config["latent_dim"])
+        # Dynamically select the architecture based on the config file name
+        if "hqae" in config_path.lower():
+            logging.info("Instantiating Hybrid Quantum Autoencoder (HQAE)...")
+            model = HybridQuantumAutoencoder(
+                latent_dim=config["latent_dim"], 
+                n_quantum_layers=config.get("n_quantum_layers", 3)
+            )
+        else:
+            logging.info("Instantiating Classical Autoencoder (CAE)...")
+            model = ClassicalAutoencoder(latent_dim=config["latent_dim"])
         
         trainer = AutoencoderTrainer(
             model=model,

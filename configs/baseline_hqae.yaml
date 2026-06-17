@@ -1,10 +1,10 @@
-experiment_name: "baseline_cae_z_axis"
+experiment_name: "baseline_hqae_z_axis"
 
-# UPDATED: Point to local Colab NVMe storage to eliminate I/O starvation
+# Pointing to local Colab NVMe storage
 data_dir: "/content/local_spectra_data/processed_spectrograms"
 
 # Checkpoints are written to Google Drive so we don't lose the model if Colab runtime dies
-save_dir: "/content/drive/MyDrive/spectra-cq-data/checkpoints/classical"
+save_dir: "/content/drive/MyDrive/spectra-cq-data/checkpoints/quantum"
 
 seeds: [42, 100, 2026]
 epochs: 15
@@ -14,3 +14,4 @@ learning_rate: 0.001
 train_split: 0.8
 
 latent_dim: 8
+n_quantum_layers: 3
