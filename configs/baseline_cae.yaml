@@ -1,6 +1,9 @@
 experiment_name: "baseline_cae_z_axis"
 
-data_dir: "/content/drive/MyDrive/spectra-cq-data/processed_spectrograms"
+# UPDATED: Point to local Colab NVMe storage to eliminate I/O starvation
+data_dir: "/content/local_spectra_data/processed_spectrograms"
+
+# Keep checkpoints writing to Drive so you don't lose the model if the runtime dies
 save_dir: "/content/drive/MyDrive/spectra-cq-data/checkpoints/classical"
 
 seeds: [42, 100, 2026]
