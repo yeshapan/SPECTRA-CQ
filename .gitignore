@@ -30,7 +30,6 @@ __pycache__/
 *$py.class
 
 # Data & Notebook checkpoints
-data/
 *.npy
 *.csv
 *.h5
