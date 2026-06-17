@@ -35,12 +35,9 @@ def compute_cwt(signal_window: np.ndarray, fs: int = 500) -> np.ndarray:
     # Convert frequencies to wavelet scales
     scales = w * fs / (2 * np.pi * frequencies)
     
-    # Compute CWT
-    # Returns complex coefficients
-    coefficients, _ = signal.cwt(signal_window, signal.morlet2, widths=scales, w=w)
+    # FIX: scipy.signal.cwt returns a single ndarray, not a tuple
+    coefficients = signal.cwt(signal_window, signal.morlet2, widths=scales, w=w)
     
-    # We drop the phase data and return the absolute magnitude (energy density)
-    # Output shape: (64 scales, window_size * fs)
     return np.abs(coefficients)
 
 def process_dataset(input_dir: str, output_dir: str, sensor_col: str, window_size_sec: int = 2, fs: int = 500):
@@ -60,15 +57,13 @@ def process_dataset(input_dir: str, output_dir: str, sensor_col: str, window_siz
 
     logging.info(f"Initialized processing pipeline for {len(csv_files)} files. Target node: {sensor_col}")
     
-    samples_per_window = window_size_sec * fs  # 2sec * 500Hz = 1000 samples
+    samples_per_window = window_size_sec * fs
     global_window_count = 0
 
     for file_path in tqdm(csv_files, desc="Applying CWT via Morlet Kernel"):
         try:
             # IO Optimization: Load only the Z-axis vector. Bypasses timestamp parsing string overhead.
             df = pd.read_csv(file_path, usecols=[sensor_col])
-            
-            # Drops rows where telemetry dropped packets
             raw_signal = df.dropna()[sensor_col].values
             
             # Calculate strict window bounds (drops trailing fractional windows)
