@@ -85,13 +85,13 @@ class AutoencoderTrainer:
             self.scheduler.step(val_loss)
             current_lr = self.optimizer.param_groups[0]['lr']
             
-            logging.info(f"Epoch {epoch:03d}/{epochs} | Train MSE: {train_loss:.6f} | Val MSE: {val_loss:.6f} | LR: {current_lr:.2e}")
+            # ALIGNED LOGGING: Format matches Regex: Epoch (\d+)/\d+ | Train MSE: ([\d.]+) | Val MSE: ([\d.]+)
+            logging.info(f"Epoch {epoch}/{epochs} | Train MSE: {train_loss:.6f} | Val MSE: {val_loss:.6f} | LR: {current_lr:.2e}")
             
             # Checkpoint mechanism: Only save weights if validation loss improves
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 save_path = os.path.join(save_dir, "best_cae_model.pth")
                 torch.save(self.model.state_dict(), save_path)
-                logging.info(f"New optimal weights saved to {save_path}")
                 
         logging.info("Training complete.")
