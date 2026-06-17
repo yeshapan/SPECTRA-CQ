@@ -1,9 +1,13 @@
+import sys
 import os
 import yaml
 import torch
 import argparse
 import logging
 from typing import Dict, Any
+
+# Bulletproof path injection: Append the parent directory (SPECTRA-CQ root) to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.data.dataloader import get_dataloaders
 from src.models.classical.cae import ClassicalAutoencoder
