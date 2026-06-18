@@ -9,15 +9,26 @@ class VQCTorchLayer(nn.Module):
     This enables the classical Adam optimizer to calculate gradients and 
     backpropagate them directly through the quantum rotations.
     """
-    def __init__(self, n_layers=3):
+    def __init__(self, n_layers=3, topology="basic"):
         super(VQCTorchLayer, self).__init__()
         self.n_layers = n_layers
+        self.topology = topology
         
         # Define the exact parameter shape required by our ansatz
-        weight_shapes = {"weights": (n_layers, N_QUBITS)}
+        # StronglyEntanglingLayers requires 3 Euler angles (RX, RY, RZ) per qubit per layer.
+        # BasicEntanglerLayers and our naive 'none' approach only require 1 angle (RX).
+        if self.topology == "strong":
+            weight_shapes = {"weights": (n_layers, N_QUBITS, 3)}
+        else:
+            weight_shapes = {"weights": (n_layers, N_QUBITS)}
         
         # Initialize PennyLane's Torch bridge
-        self.vqc = qml.qnn.TorchLayer(quantum_circuit, weight_shapes)
+        # We pass topology as a static keyword argument to the QNode
+        self.vqc = qml.qnn.TorchLayer(
+            quantum_circuit, 
+            weight_shapes,
+            topology=self.topology
+        )
 
     def forward(self, x):
         """

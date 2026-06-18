@@ -9,7 +9,7 @@ class HybridQuantumAutoencoder(nn.Module):
     Imports the identical convolutional components from the baseline, but replaces 
     the dense bottleneck with the Variational Quantum Circuit (VQC) wrapper.
     """
-    def __init__(self, latent_dim=8, n_quantum_layers=3):
+    def __init__(self, latent_dim=8, n_quantum_layers=3, topology="basic"):
         super(HybridQuantumAutoencoder, self).__init__()
         
         # Instantiate the baseline model to rip its classical components
@@ -22,7 +22,8 @@ class HybridQuantumAutoencoder(nn.Module):
         self.encoder_linear = cae.encoder_linear 
         
         # 3. The Quantum Bottleneck (Replaces the classical latent space)
-        self.quantum_bottleneck = VQCTorchLayer(n_layers=n_quantum_layers)
+        # We now pass the topology parameter down into our custom PyTorch-PennyLane bridge
+        self.quantum_bottleneck = VQCTorchLayer(n_layers=n_quantum_layers, topology=topology)
         
         # 4. Post-Quantum Decompression (Up-projection)
         self.decoder_linear = cae.decoder_linear
@@ -36,7 +37,7 @@ class HybridQuantumAutoencoder(nn.Module):
         Forces the classical spatial blocks to the GPU, but physically pins
         the PennyLane VQC and its trainable weights to the CPU to prevent state-vector crashes.
         """
-        super(HybridQuantumAutoencoder, self).to(*args, **kwargs)
+        super(HybridQuantumAutoencoder, self).__init__(*args, **kwargs)
         self.quantum_bottleneck.to(torch.device('cpu'))
         return self
 
@@ -63,7 +64,6 @@ class HybridQuantumAutoencoder(nn.Module):
         
         # Reconstruct the spatial tensors
         x = self.decoder_linear(x)
-        x = x.view(x.size(0), 32, 8, 25)  # Unflatten dynamically
+        x = x.view(x.size(0), 32, 8, 25)
         x = self.decoder_conv(x)
-        
         return x

@@ -24,55 +24,65 @@ To ensure statistical stability and reproducibility, especially concerning the p
 ```
 SPECTRA-CQ/
 ├── configs/                        # Configuration management
-│   ├── default.yaml                # Base environment settings and paths
 │   ├── baseline_cae.yaml           # Config for the Classical Convolutional Autoencoder
-│   └── hybrid_hqae.yaml            # Config for the Hybrid Quantum Autoencoder
+│   └── baseline_hqae.yaml          # Config for the Hybrid Quantum Autoencoder
 │
-├── notebooks/                      # Exploration and execution dashboards
-│   ├── 01_eda_and_cwt.ipynb        # Visualizing raw 70-sec bursts and CWT spectrograms
-│   ├── 02_train_baseline.ipynb     # Colab execution wrapper for classical baseline
-│   ├── 03_train_quantum.ipynb      # Colab execution wrapper for hybrid quantum model
-│   └── 04_result_analysis.ipynb    # Evaluation metrics, ROC curves, MSE thresholding
+├── data/                           # Data directory
+│   └── 2024-02-01_2024-10-31_ida_ki_export/
 │
 ├── docs/                           # Documentation
+│   ├── ARCHITECTURE.md             # System architecture and design
 │   ├── DATASET.md                  # Dataset characteristics
 │   └── PIPELINE.md                 # Data processing pipeline
 │
-├── src/                            # Core Source Code
-│   ├── init.py
-│   │
-│   ├── data/                       # Data pipeline
-│   │   ├── preprocess.py           # Converts 70-sec CSV bursts to CWT .npy matrices
-│   │   └── dataloader.py           # PyTorch Dataset for loading spectrograms
-│   │
-│   ├── models/                     # Network architectures
-│   │   ├── classical/              # Classical baselines
-│   │   │   └── cae.py              # Classical Convolutional Autoencoder
-│   │   ├── quantum/                # Pure QML math
-│   │   │   ├── feature_map.py      # Data encoding strategies (Angle/Amplitude)
-│   │   │   └── ansatz.py           # Variational Quantum Circuits (e.g., StronglyEntangling)
-│   │   └── hybrid/                 # Hybrid Integration
-│   │       └── hqae.py             # Connects Classical CNN encoder to VQC bottleneck
-│   │
-│   ├── engine/                     # Training logic and reproducibility
-│   │   ├── trainer.py              # Standardized PyTorch training loop
-│   │   ├── metrics.py              # MSE calculation, anomaly scoring, and AUC
-│   │   └── seed_control.py         # Enforces the strict 3-seed determinism protocol
-│   │
-│   └── utils/                      # Helper modules
-│       ├── logger.py               # Experiment logging for terminal and files
-│       └── viz.py                  # Scripts for generating visualizations
+├── notebooks/                      # Exploration and execution dashboards
+│   ├── 01_eda_and_cwt.ipynb        # Visualizing raw 70-sec bursts and CWT spectrograms
+│   ├── 02_cae_baseline.ipynb       # Colab execution wrapper for classical baseline
+│   └── 03_hqae_baseline.ipynb      # Colab execution wrapper for hybrid quantum model
 │
 ├── scripts/                        # Execution scripts
 │   └── run_experiment.py           # Master script to execute models via YAML configs
 │
-├── tests/                          # Integrity testing
-│   ├── test_cwt.py                 # Validates spectrogram matrix dimensions
-│   └── test_quantum_grad.py        # Ensures parameter-shift gradients are flowing
+├── src/                            # Core Source Code
+│   ├── __init__.py
+│   │
+│   ├── data/                       # Data pipeline
+│   │   ├── __init__.py
+│   │   ├── dataloader.py           # PyTorch Dataset for loading spectrograms
+│   │   └── preprocess.py           # Converts 70-sec CSV bursts to CWT .npy matrices
+│   │
+│   ├── engine/                     # Training logic and reproducibility
+│   │   ├── __init__.py
+│   │   ├── seed_control.py         # Enforces the strict 3-seed determinism protocol
+│   │   └── trainer.py              # Standardized PyTorch training loop
+│   │
+│   ├── models/                     # Network architectures
+│   │   ├── __init__.py
+│   │   ├── classical/              # Classical baselines
+│   │   │   ├── __init__.py
+│   │   │   └── cae.py              # Classical Convolutional Autoencoder
+│   │   ├── hybrid/                 # Hybrid Integration
+│   │   │   ├── __init__.py
+│   │   │   ├── hqae.py             # Connects Classical CNN encoder to VQC bottleneck
+│   │   │   └── quantum_layer.py    # Quantum layer integration
+│   │   └── quantum/                # Pure QML math
+│   │       ├── __init__.py
+│   │       ├── ansatz.py           # Variational Quantum Circuits
+│   │       ├── embedding.py        # Data encoding strategies
+│   │       └── vqc.py              # Variational Quantum Circuit definition
+│   │
+│   └── utils/                      # Helper modules
+│       ├── __init__.py
+│       └── viz.py                  # Scripts for generating visualizations
+│
+├── study-notes/                    # Research and planning notes
+│   ├── 01_theoretical_justification.md
+│   ├── 02_model_architectures.md
+│   └── 03_implementation_plan.md
 │
 ├── .gitignore
-├── requirements.txt                # Python dependencies (PyTorch, PennyLane, Qiskit)
-└── README.md
+├── README.md
+└── requirements.txt                # Python dependencies (PyTorch, PennyLane, Qiskit)
 ```
 
 * **Version Control & Development**: Authored in local IDE (Google Antigravity) and version controlled via GitHub

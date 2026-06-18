@@ -52,7 +52,8 @@ def main(config_path: str):
             logging.info("Instantiating Hybrid Quantum Autoencoder (HQAE)...")
             model = HybridQuantumAutoencoder(
                 latent_dim=config["latent_dim"], 
-                n_quantum_layers=config.get("n_quantum_layers", 3)
+                n_quantum_layers=config.get("n_quantum_layers", 3),
+                topology=config.get("topology", "basic")
             )
         else:
             logging.info("Instantiating Classical Autoencoder (CAE)...")
@@ -77,5 +78,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="SPECTRA-CQ Master Execution Script")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()
-    
     main(args.config)
