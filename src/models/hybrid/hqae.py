@@ -37,7 +37,7 @@ class HybridQuantumAutoencoder(nn.Module):
         Forces the classical spatial blocks to the GPU, but physically pins
         the PennyLane VQC and its trainable weights to the CPU to prevent state-vector crashes.
         """
-        super(HybridQuantumAutoencoder, self).__init__(*args, **kwargs)
+        super(HybridQuantumAutoencoder, self).to(*args, **kwargs)
         self.quantum_bottleneck.to(torch.device('cpu'))
         return self
 

@@ -22,12 +22,20 @@ class VQCTorchLayer(nn.Module):
         else:
             weight_shapes = {"weights": (n_layers, N_QUBITS)}
         
-        # Initialize PennyLane's Torch bridge
-        # We pass topology as a static keyword argument to the QNode
+        # Fix: PennyLane 0.45+ strictly checks the signature.
+        # Create a wrapper to hide the 'topology' argument from the TorchLayer shape checker.
+        def circuit_wrapper(inputs, weights):
+            # .func extracts the raw Python function from your original QNode
+            # This prevents a "QNode-inside-a-QNode" crash while passing the static string
+            return quantum_circuit.func(inputs, weights, topology=self.topology)
+            
+        # Dynamically re-compile the QNode using your original device
+        dynamic_qnode = qml.QNode(circuit_wrapper, quantum_circuit.device)
+        
+        # Initialize PennyLane's Torch bridge with the clean signature
         self.vqc = qml.qnn.TorchLayer(
-            quantum_circuit, 
-            weight_shapes,
-            topology=self.topology
+            dynamic_qnode, 
+            weight_shapes
         )
 
     def forward(self, x):
