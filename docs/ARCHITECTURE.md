@@ -33,6 +33,14 @@ The 8-dimensional vector produced by the classical convolutional encoder is pass
 3. **Measurement (Expectation Values):**
    To return the data to the classical decoder, the quantum state must be collapsed. The circuit measures the expectation value of the Pauli-Z operator ($\langle \sigma_z \rangle$) for each qubit. This yields a deterministic, continuous classical vector bounded between $[-1, 1]$, which is then passed to the classical `ConvTranspose2d` decoder.
 
+### The Ablation Matrix
+To rigorously isolate the cause of gradient decay, the HQAE is subjected to a two-axis ablation study:
+1. **Entanglement Topology:** Tests spatial coupling mechanisms.
+   * `none`: Zero entanglement (independent independent $R_x$ rotations).
+   * `basic`: Localized ring entanglement.
+   * `strong`: Global all-to-all entanglement with generalized 3D Euler rotations.
+2. **Circuit Depth:** Tests the parameterization limits. Evaluated at `Depth 1` (Shallow), `Depth 3` (Intermediate) and `Depth 5` (Deep).
+
 ## 3. Training Protocol & Constraints
 
 To ensure rigorous academic reproducibility and account for the mathematical realities of current Noisy Intermediate-Scale Quantum (NISQ) algorithms, both models strictly adhere to the following training protocol:

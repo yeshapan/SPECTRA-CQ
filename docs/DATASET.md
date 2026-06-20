@@ -25,8 +25,15 @@ Before ingestion into the SPECTRA-CQ repository, the raw data underwent standard
 * **DC Offset Removal:** The median of each measurement was subtracted to correct piezoelectric hardware drift.
 * **Bandpass Filtering:** A 4th-order Butterworth filter was applied with a bandwidth of 0.5 Hz to 100 Hz (serving as an anti-aliasing filter and hardware threshold).
 
-## Phase 1 Limitations & Publication Roadmap
-The current repository configuration strictly isolates a single sensor (`PE11`). Subsequent phases of this research will expand this data pipeline to include Multi-Sensor Spatial Fusion (integrating `PE11`, `PE12`, and `PE13`) and Synthetic Data Augmentation to stress-test the empirical resilience of the Variational Quantum Circuit (VQC).
+## Current Data Scope and Integration Roadmap
+The raw OpenLAB dataset contains multi-node telemetry, but the current repository configuration intentionally isolates a single sensor (`PE11`). 
+
+This restriction establishes a controlled baseline to cleanly evaluate the quantum entanglement ablation without the confounding variable of spatial correlation between different sensors.
+
+**Future Data Integration:**
+* **Leg 2:** Maintain single-sensor isolation (`PE11`) while implementing Local Cost Functions to break the quantum barren plateau.
+* **Leg 3:** Expand pipeline ingestion to execute Multi-Sensor Spatial Fusion (integrating `PE11`, `PE12`,\ and `PE13`) through the optimized quantum architecture.
+* **Leg 4:** Introduce Synthetic Data Augmentation to the pipeline to stress-test empirical resilience.
 
 ## Acknowledgments
 The raw dataset is provided by the openLAB research team (Andreas Jansen, et al.) and is available via OPARA under a CC-BY-SA license.
