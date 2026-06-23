@@ -2,10 +2,14 @@ import re
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from matplotlib.ticker import MaxNLocator, AutoMinorLocator
 
-def plot_training_logs(log_file_path: str, title: str = "Training Convergence: MSE Across Seeds"):
+COLOR_PALETTE = ['firebrick', 'steelblue', 'olivedrab', 'darkgoldenrod', 'indigo']
+
+def plot_training_logs(log_file_path: str, title: str = "Training Convergence: MSE Across Seeds", y_lim=(0.005, 0.055)):
     """
     Parses the terminal output log and plots Train vs Validation MSE across all seeds.
+    Y-axis limits are fixed to ensure accurate visual comparison across different topologies.
     """
     sns.set_theme(style="darkgrid")
     
@@ -37,54 +41,57 @@ def plot_training_logs(log_file_path: str, title: str = "Training Convergence: M
 
     plt.figure(figsize=(10, 6))
     unique_seeds = list(set(seeds))
+    ax = plt.gca()
     
-    # Custom color palette explicitly mapping to the requested research tones
-    # Teal, Purple, Grey, Pink, Blue, Green
-    custom_colors = ['#008080', '#800080', '#808080', '#FF1493', '#0000FF', '#008000']
-
     for idx, seed in enumerate(unique_seeds):
         seed_epochs = [e for e, s in zip(epochs, seeds) if s == seed]
         seed_train = [t for t, s in zip(train_losses, seeds) if s == seed]
         seed_val = [v for v, s in zip(val_losses, seeds) if s == seed]
+        
+        color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
+        
+        plt.plot(seed_epochs, seed_train, linestyle='--', color=color, alpha=0.5, label=f'Seed {seed} (Train)')
+        plt.plot(seed_epochs, seed_val, marker='o', color=color, linewidth=2, label=f'Seed {seed} (Val)')
 
-        color = custom_colors[idx % len(custom_colors)]
-
-        plt.plot(seed_epochs, seed_train, linestyle="--", alpha=0.6, color=color, label=f"Seed {seed} (Train)")
-        plt.plot(seed_epochs, seed_val, linestyle="-", linewidth=2.5, color=color, label=f"Seed {seed} (Val)")
-
-    plt.title(title, fontsize=14, fontweight="bold")
-    plt.xlabel("Epochs", fontsize=12)
+    plt.title(title, fontsize=14, fontweight="bold", pad=15)
+    plt.xlabel("Epoch", fontsize=12)
     plt.ylabel("Mean Squared Error (MSE)", fontsize=12)
-    plt.yscale("log")
+    
+    # LOCK AXES SCALING
+    plt.xlim(1, 15)
+    plt.ylim(y_lim)
+    
+    # Increase axis tick density
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True, nbins=15))
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=12))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(4))
+    
+    plt.grid(True, which='both', linestyle=':', linewidth=0.5)
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
     plt.show()
 
-
-def plot_topology_ablation(results_dict, title="Phase 4a: Topology Ablation (Fixed Depth)"):
+def plot_ablation_results(results_dict, title="Phase 4a: Topology Ablation Validation MSE"):
     """
-    Plots a bar chart comparing the validation MSE of different entanglement topologies.
-    
-    Args:
-        results_dict (dict): Format {"none": 0.031, "basic": 0.025, "strong": 0.008}
+    Plots a bar chart comparing the final validation MSE across different architectures/topologies.
     """
-    sns.set_theme(style="whitegrid")
+    sns.set_theme(style="darkgrid")
     
-    # Ensure strict logical ordering
-    topologies = ["none", "basic", "strong"]
-    mses = [results_dict.get(t, 0) for t in topologies]
+    architectures = list(results_dict.keys())
+    mses = list(results_dict.values())
     
     plt.figure(figsize=(8, 6))
+    ax = plt.gca()
     
-    # Map colors: Grey for none, Purple for basic, Teal for strong
-    bar_colors = ['#808080', '#800080', '#008080']
-    
-    bars = plt.bar(topologies, mses, color=bar_colors, width=0.6)
+    bars = plt.bar(architectures, mses, color=COLOR_PALETTE[:len(architectures)])
     
     plt.title(title, fontsize=14, fontweight="bold", pad=15)
-    plt.xlabel("Entanglement Topology", fontsize=12)
     plt.ylabel("Validation MSE (Log Scale)", fontsize=12)
     plt.yscale("log")
+    
+    # Increase Y-axis tick density for log scale
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=10))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
     
     # Add data labels on top of the bars
     for bar in bars:
@@ -95,13 +102,10 @@ def plot_topology_ablation(results_dict, title="Phase 4a: Topology Ablation (Fix
     plt.tight_layout()
     plt.show()
 
-
-def plot_depth_ablation(results_dict, title="Phase 4b: Circuit Depth Ablation (Fixed Topology)"):
+def plot_depth_ablation(results_dict, title="Phase 4b: Circuit Depth Ablation (Fixed Topology)", y_lim=(0.005, 0.025)):
     """
     Plots a trend line comparing the validation MSE across different quantum layer depths.
-    
-    Args:
-        results_dict (dict): Format {1: 0.021, 3: 0.008, 5: 0.009}
+    Fixed Y-axis limits prevent exaggerated scaling on minute differences.
     """
     sns.set_theme(style="darkgrid")
     
@@ -109,22 +113,21 @@ def plot_depth_ablation(results_dict, title="Phase 4b: Circuit Depth Ablation (F
     mses = [results_dict[d] for d in depths]
     
     plt.figure(figsize=(8, 6))
+    ax = plt.gca()
     
-    # Use Pink for the depth trendline
-    plt.plot(depths, mses, marker='o', markersize=10, linestyle='-', linewidth=3, color='#FF1493')
+    plt.plot(depths, mses, marker='o', markersize=10, linestyle='-', linewidth=3, color=COLOR_PALETTE[3])
     
     plt.title(title, fontsize=14, fontweight="bold", pad=15)
     plt.xlabel("Number of Quantum Layers (Depth)", fontsize=12)
-    plt.ylabel("Validation MSE (Log Scale)", fontsize=12)
-    plt.yscale("log")
+    plt.ylabel("Validation MSE", fontsize=12)
     
-    # Set explicit x-ticks to avoid decimal layer numbers (e.g., 1.5, 2.5)
-    plt.xticks(depths)
+    # LOCK Y-AXIS
+    plt.ylim(y_lim)
     
-    # Add data labels
-    for i, txt in enumerate(mses):
-        plt.annotate(f'{txt:.4f}', (depths[i], mses[i]), textcoords="offset points", 
-                     xytext=(0,15), ha='center', fontsize=11, fontweight='bold')
-        
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True, nbins=len(depths)*2))
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=12))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(4))
+    plt.grid(True, which='both', linestyle=':', linewidth=0.5)
+    
     plt.tight_layout()
     plt.show()

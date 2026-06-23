@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import pennylane as qml
+import numpy as np
 from src.models.quantum.vqc import quantum_circuit, N_QUBITS
 
 class VQCTorchLayer(nn.Module):
@@ -19,9 +20,18 @@ class VQCTorchLayer(nn.Module):
         # BasicEntanglerLayers and our naive 'none' approach only require 1 angle (RX).
         if self.topology == "strong":
             weight_shapes = {"weights": (n_layers, N_QUBITS, 3)}
+            # Identity Block Initialization: Required for deep entanglement scrambling
+            init_method = {
+                "weights": lambda x: torch.nn.init.normal_(x, mean=0.0, std=0.01)
+            }
         else:
             weight_shapes = {"weights": (n_layers, N_QUBITS)}
-        
+            # Non-Zero Initialization: 'none' and 'basic' topologies will suffer absolute zero gradients if initialized near 0 due to sin(0) = 0 derivatives.
+            # We use a Uniform distribution to ensure gradients can flow back immediately.
+            init_method = {
+                "weights": lambda x: torch.nn.init.uniform_(x, a=-np.pi, b=np.pi)
+            }
+            
         # Fix: PennyLane 0.45+ strictly checks the signature.
         # Create a wrapper to hide the 'topology' argument from the TorchLayer shape checker.
         def circuit_wrapper(inputs, weights):
@@ -35,11 +45,16 @@ class VQCTorchLayer(nn.Module):
         # Initialize PennyLane's Torch bridge with the clean signature
         self.vqc = qml.qnn.TorchLayer(
             dynamic_qnode, 
-            weight_shapes
+            weight_shapes,
+            init_method=init_method  # Pass the new initialization strategy
         )
 
     def forward(self, x):
         """
         Executes the forward pass through the quantum circuit.
         """
-        return self.vqc(x)
+        # Fix: The Classical-to-Quantum Bridge Latent Scaling
+        # Bounding the classical logits to [-pi, pi] prevents the sinusoidal Ry embedding gradients from washing out or oscillating to zero.
+        x_scaled = torch.tanh(x) * np.pi
+        
+        return self.vqc(x_scaled)

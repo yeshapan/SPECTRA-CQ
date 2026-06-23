@@ -31,42 +31,60 @@ class AutoencoderTrainer:
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode='min', factor=0.5, patience=3)
 
     def train_epoch(self, dataloader: DataLoader) -> float:
-        """Executes a single pass over the training dataset."""
+        """Executes a single pass over the training set."""
         self.model.train()
         running_loss = 0.0
         
-        for batch_idx, (inputs, targets) in enumerate(tqdm(dataloader, desc="Training", leave=False)):
-            inputs = inputs.to(self.device, non_blocking=True)
-            targets = targets.to(self.device, non_blocking=True)
+        for batch in tqdm(dataloader, desc="Training", leave=False):
+            # FIX: Safely unpack the batch if dataloader returns a list/tuple like [data, labels]
+            if isinstance(batch, (list, tuple)):
+                inputs = batch[0]
+            else:
+                inputs = batch
+                
+            inputs = inputs.to(self.device)
+            # For autoencoders, input is also the target
+            targets = inputs
             
-            # Forward pass
+            self.optimizer.zero_grad()
             outputs = self.model(inputs)
             loss = self.criterion(outputs, targets)
             
-            # Backward pass and optimization
-            self.optimizer.zero_grad(set_to_none=True) # Slightly faster than standard zero_grad()
             loss.backward()
+            
+            # V2: Gradient Clipping (Instantiation Roulette Mitigation)
+            # Clips gradients to a maximum norm of 1.0. 
+            # This prevents gradient explosion which severely destabilizes the purely localized ('none') topology models 
+            # and prevents wild optimization jumps during early epochs.
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+            
             self.optimizer.step()
             
             running_loss += loss.item() * inputs.size(0)
             
         return running_loss / len(dataloader.dataset)
 
-    @torch.no_grad()
     def validate_epoch(self, dataloader: DataLoader) -> float:
-        """Evaluates model on validation set without tracking gradients."""
+        """Evaluates the model on the validation set."""
         self.model.eval()
         running_loss = 0.0
         
-        for inputs, targets in dataloader:
-            inputs = inputs.to(self.device, non_blocking=True)
-            targets = targets.to(self.device, non_blocking=True)
-            
-            outputs = self.model(inputs)
-            loss = self.criterion(outputs, targets)
-            
-            running_loss += loss.item() * inputs.size(0)
-            
+        with torch.no_grad():
+            for batch in dataloader:
+                # FIX: Safely unpack the batch in validation loop as well
+                if isinstance(batch, (list, tuple)):
+                    inputs = batch[0]
+                else:
+                    inputs = batch
+                    
+                inputs = inputs.to(self.device)
+                targets = inputs
+                
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, targets)
+                
+                running_loss += loss.item() * inputs.size(0)
+                
         return running_loss / len(dataloader.dataset)
 
     def fit(self, train_loader: DataLoader, val_loader: DataLoader, epochs: int, save_dir: str):
@@ -91,7 +109,8 @@ class AutoencoderTrainer:
             # Checkpoint mechanism: Only save weights if validation loss improves
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
-                save_path = os.path.join(save_dir, "best_cae_model.pth")
+                save_path = os.path.join(save_dir, "best_model.pth")
                 torch.save(self.model.state_dict(), save_path)
+                logging.info(f"New optimal weights saved. Validation Loss: {best_val_loss:.6f}")
                 
-        logging.info("Training complete.")
+        return best_val_loss
