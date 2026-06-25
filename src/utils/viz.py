@@ -2,7 +2,9 @@ import re
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 from matplotlib.ticker import MaxNLocator, AutoMinorLocator
+from sklearn.metrics import roc_curve, auc
 
 COLOR_PALETTE = ['firebrick', 'steelblue', 'olivedrab', 'darkgoldenrod', 'indigo']
 
@@ -129,5 +131,37 @@ def plot_depth_ablation(results_dict, title="Phase 4b: Circuit Depth Ablation (F
     ax.yaxis.set_minor_locator(AutoMinorLocator(4))
     plt.grid(True, which='both', linestyle=':', linewidth=0.5)
     
+    plt.tight_layout()
+    plt.show()
+
+def plot_roc_curve(scores_dict: dict, y_true: np.ndarray, title: str = "ROC Curve: Synthetic Damage Detection"):
+    """
+    Plots the AUC-ROC curve for an arbitrary number of models.
+    
+    Args:
+        scores_dict: Dictionary mapping model names to their concatenated MSE score arrays.
+        y_true: Ground truth binary labels (0 = Healthy, 1 = Damaged).
+    """
+    sns.set_theme(style="darkgrid")
+    plt.figure(figsize=(9, 7))
+
+    for idx, (model_name, scores) in enumerate(scores_dict.items()):
+        fpr, tpr, _ = roc_curve(y_true, scores)
+        roc_auc = auc(fpr, tpr)
+        
+        # Cycle through the Leg-2 palette
+        color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
+        plt.plot(fpr, tpr, color=color, lw=2.5, label=f'{model_name} (AUC = {roc_auc:.3f})')
+
+    plt.plot([0, 1], [0, 1], color='gray', lw=1.5, linestyle='--')
+
+    # LOCK AXES SCALING
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    
+    plt.xlabel('False Positive Rate (False Alarms)', fontsize=12)
+    plt.ylabel('True Positive Rate (Correct Detections)', fontsize=12)
+    plt.title(title, fontsize=14, fontweight='bold', pad=15)
+    plt.legend(loc='lower right', fontsize=12)
     plt.tight_layout()
     plt.show()
