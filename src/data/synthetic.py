@@ -3,17 +3,17 @@ import numpy as np
 import torch
 from typing import List, Tuple
 
-def inject_synthetic_damage(spectrogram: np.ndarray, noise_factor: float = 0.3, mask_band: tuple = (40, 50)) -> np.ndarray:
+def inject_synthetic_damage(spectrogram: np.ndarray, noise_factor: float = 0.02, mask_band: tuple = (45, 47)) -> np.ndarray:
     """
-    Simulates structural degradation on a 2D CWT spectrogram.
+    Simulates early-stage (incipient) structural degradation on a 2D CWT spectrogram.
     
-    1. Adds structural noise → to simulate micro-cracking / sensor degradation.
-    2. Masks a specific frequency band → to simulate stiffness loss / mode shift.
+    1. Adds subtle structural noise → to simulate micro-cracking.
+    2. Masks a very narrow frequency band → to simulate slight stiffness loss.
     
     Args:
         spectrogram (np.ndarray): Original healthy spectrogram.
-        noise_factor (float): Intensity of the Gaussian noise.
-        mask_band (tuple): (start, end) index of the frequency scales to wipe out.
+        noise_factor (float): Intensity of the Gaussian noise (Default: 0.02).
+        mask_band (tuple): The (start, end) index of the frequency scales to wipe out (Default: 45 to 47).
         
     Returns:
         np.ndarray: The degraded, normalized spectrogram.
@@ -24,7 +24,7 @@ def inject_synthetic_damage(spectrogram: np.ndarray, noise_factor: float = 0.3, 
     noise = np.random.normal(loc=0.0, scale=noise_factor, size=damaged_spec.shape)
     damaged_spec = damaged_spec + noise
     
-    # 2. Frequency Band Masking
+    # 2. Frequency Band Masking (Subtle)
     damaged_spec[mask_band[0]:mask_band[1], :] = 0.0
     
     # 3. Re-normalize to [0, 1] to match the Autoencoder input bounds
