@@ -9,11 +9,14 @@ class HybridQuantumAutoencoder(nn.Module):
     Imports the identical convolutional components from the baseline, but replaces 
     the dense bottleneck with the Variational Quantum Circuit (VQC) wrapper.
     """
-    def __init__(self, latent_dim=8, n_quantum_layers=3, topology="basic"):
+    def __init__(self, latent_dim_per_sensor=2, num_sensors=6, n_quantum_layers=3, topology="basic"):
         super(HybridQuantumAutoencoder, self).__init__()
         
+        self.num_sensors = num_sensors
+        self.latent_dim_per_sensor = latent_dim_per_sensor
+        
         # Instantiate the baseline model to rip its classical components
-        cae = ClassicalAutoencoder(latent_dim=latent_dim)
+        cae = ClassicalAutoencoder(latent_dim_per_sensor=latent_dim_per_sensor, num_sensors=num_sensors)
         
         # 1. Classical Encoder (Identical to Baseline)
         self.encoder_conv = cae.encoder_conv
@@ -42,12 +45,18 @@ class HybridQuantumAutoencoder(nn.Module):
         return self
 
     def forward(self, x):
-        # Squeeze through the spatial hierarchy
-        x = self.encoder_conv(x)
-        x = x.view(x.size(0), -1)  # Flatten dynamically (B, C*H*W)
+        B, C, H, W = x.size()
         
-        # Compress to 8-dimensions for the qubits
+        # Siamese Spatial Compression
+        x = x.view(B * C, 1, H, W)
+        x = self.encoder_conv(x)
+        x = x.view(x.size(0), -1)  # Flatten dynamically (B*C, C*H*W)
+        
+        # Compress to 2-dimensions per sensor
         x = self.encoder_linear(x)
+        
+        # Graph Assembly: Flatten the independent sensor features into the global 12-D space
+        x = x.view(B, C * self.latent_dim_per_sensor)
         
         # The Device Bridge
         # 1. Store original GPU device
@@ -62,8 +71,13 @@ class HybridQuantumAutoencoder(nn.Module):
         # 3. Move back to GPU for classical decoding
         x = x_quantum.to(original_device)
         
+        # Deconstruct the graph back to isolated sensor features for the decoder
+        x = x.view(B * C, self.latent_dim_per_sensor)
+        
         # Reconstruct the spatial tensors
         x = self.decoder_linear(x)
         x = x.view(x.size(0), 32, 8, 25)
         x = self.decoder_conv(x)
+        
+        x = x.view(B, C, H, W)
         return x

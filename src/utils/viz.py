@@ -165,3 +165,46 @@ def plot_roc_curve(scores_dict: dict, y_true: np.ndarray, title: str = "ROC Curv
     plt.legend(loc='lower right', fontsize=12)
     plt.tight_layout()
     plt.show()
+
+def plot_multi_sensor_spectrograms(tensor: np.ndarray, title: str = "6-Sensor Spatial Spectrogram Synchronization"):
+    """
+    Visualizes the (6, 64, 1000) multi-channel tensor across a 3x2 grid.
+    Maps the tensor indices geometrically to the physical bridge layout to verify spatial integrity.
+    
+    Args:
+        tensor (np.ndarray): The processed CWT tensor of shape (6, 64, 1000).
+    """
+    sns.set_theme(style="darkgrid")
+    
+    # Bridge geometry mapping (Index -> Physical Sensor)
+    sensor_labels = [
+        "PE11 (Span 1, Girder 1)", "PE12 (Span 1, Girder 2)", "PE13 (Span 1, Girder 3)",
+        "PE21 (Span 2, Girder 1)", "PE22 (Span 2, Girder 2)", "PE23 (Span 2, Girder 3)"
+    ]
+    
+    fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(16, 12), sharex=True, sharey=True)
+    fig.suptitle(title, fontsize=16, fontweight="bold", y=0.98)
+    
+    # Define a consistent color mapping limit across all sensors to preserve relative energy deltas
+    vmin, vmax = tensor.min(), tensor.max()
+    
+    for idx, ax in enumerate(axes.flatten()):
+        # Plot the 2D energy matrix for the specific sensor channel
+        im = ax.imshow(tensor[idx], aspect='auto', origin='lower', cmap='magma', vmin=vmin, vmax=vmax)
+        
+        ax.set_title(sensor_labels[idx], fontsize=12, fontweight="bold", color=COLOR_PALETTE[1])
+        ax.set_ylabel("Frequency Scale (Log)", fontsize=10)
+        
+        # Format axes
+        ax.yaxis.set_major_locator(MaxNLocator(nbins=8))
+        ax.xaxis.set_major_locator(MaxNLocator(nbins=10))
+        
+        if idx >= 4:  # Only add X-axis labels to the bottom row
+            ax.set_xlabel("Time (Samples)", fontsize=10)
+            
+    # Add a unified colorbar for the entire physical structure
+    cbar_ax = fig.add_axes([1.02, 0.15, 0.02, 0.7])
+    fig.colorbar(im, cax=cbar_ax, label="Normalized Energy Magnitude")
+    
+    plt.tight_layout()
+    plt.show()

@@ -24,6 +24,18 @@ class VQCTorchLayer(nn.Module):
             init_method = {
                 "weights": lambda x: torch.nn.init.normal_(x, mean=0.0, std=0.01)
             }
+
+        elif "bridge_graph" in self.topology:
+            # Multi-sensor fusion update: Physics-Informed Inter-Sensor Combinations
+            # 6 sensors yield 15 unique spatial pair combinations: (6 * 5) / 2 = 15
+            # We need exactly 1 parameter (CRY angle) per spatial pair per layer
+            weight_shapes = {"weights": (n_layers, 15)}
+            # Near-Zero Initialization: Allows the spatial connections to start as weak perturbations rather than chaotic cross-talk.
+            # This enables Adam to slowly build the graph edge weights.
+            init_method = {
+                "weights": lambda x: torch.nn.init.uniform_(x, a=-0.1, b=0.1)
+            }
+
         else:
             weight_shapes = {"weights": (n_layers, N_QUBITS)}
             # Non-Zero Initialization: 'none' and 'basic' topologies will suffer absolute zero gradients if initialized near 0 due to sin(0) = 0 derivatives.

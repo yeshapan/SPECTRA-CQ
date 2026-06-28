@@ -19,8 +19,6 @@ The SPECTRA-CQ research is structured into progressive phases to benchmark the e
     * topology-specific uniform initialization
 * Evaluated the anomaly detection threshold of these models, empirically proving a hard physical boundary: **A single sensor architecture lacks the required spatial context to detect incipient damage, necessitating a transition to multi-sensor fusion.**
 
----
-
 ## Phase 1 and 2: Foundation + Entanglement Bottleneck
 
 ### The Classical Baseline (CAE)
@@ -44,8 +42,6 @@ To isolate the parameters of quantum advantage, the 8-dimensional latent space w
         * the models became permanently trapped in a Barren Plateau across all deterministic seeds and depths and flatlined at MSE `~0.0317`.
     * **Insight:** Introducing `CNOT` gates to force spatial coupling created a noise landscape that completely blinded the classical Adam optimizer.
 
----
-
 ## Phase 3: Synthetic Anomaly Evaluation (Inference)
 
 To evaluate empirical resilience, the frozen architectures (Classical CAE, HQAE `none` and HQAE `strong`) were tested against mathematically injected synthetic degradation using a 3-seed ensemble protocol.
@@ -62,8 +58,6 @@ To evaluate empirical resilience, the frozen architectures (Classical CAE, HQAE 
     * **HQAE [Strong]:** AUC ~0.527
     * **HQAE [None]:** AUC ~0.473
 * **Insight (Memorization vs. Regularization):** The over-parameterized Classical CAE slightly memorized the synthetic noise pattern, resulting in a marginal bump above 0.500. The heavily constrained HQAE `none` aggressively smoothed out the noise, treating the 2% micro-crack as standard environmental variance (e.g., wind).
-
----
 
 ## Conclusion + Phase 4 Roadmap
 The Phase 3 empirical results prove a fundamental physical limitation of localized SHM: **a single accelerometer simply lacks the necessary signal-to-noise ratio and spatial context to distinguish subtle, early-stage structural degradation from routine environmental variance.** If a single sensor cannot reliably detect localized anomalies, the system must map the global correlations of the entire structure. 

@@ -22,18 +22,21 @@ class SpectrogramDataset(Dataset):
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         # Disk IO bottleneck: mmap_mode='r' reads directly from disk without loading full array
         # This is critical if the dataset grows beyond system RAM
+        # Phase-4 Update: spec is now shaped (6, 64, 1000)
         spec = np.load(self.file_paths[idx])
         
-        # Min-Max Normalization per sample to bound energy values between [0, 1]
-        # Crucial for stable gradient descent in Autoencoders
+        # Min-Max Normalization
+        # Phase-4 Update: Computed the min/max across the ENTIRE 6-channel array globally.
+        # CRITICAL: If we normalize each channel independently, we destroy the relative energy 
+        # differences between sensors (for example: erasing the physical fact that PE11 is closer to the load).
         spec_min, spec_max = spec.min(), spec.max()
         if spec_max > spec_min:
             spec = (spec - spec_min) / (spec_max - spec_min)
             
-        # Convert to Tensor and add Channel dimension
-        # Input shape expected by PyTorch Conv2d: (C, H, W)
-        # Resulting shape: (1, 64, 1000)
-        tensor_spec = torch.tensor(spec, dtype=torch.float32).unsqueeze(0)
+        # Convert to Tensor
+        # Input shape expected by PyTorch Conv2d: (Channels, Height, Width)
+        # Phase-4 Update: Removed the .unsqueeze(0) call (done previously to add a channel dimension) because now the array is natively (6, 64, 1000).
+        tensor_spec = torch.tensor(spec, dtype=torch.float32)
         
         return tensor_spec, tensor_spec
 
