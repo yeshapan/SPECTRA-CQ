@@ -48,17 +48,17 @@ def prepare_evaluation_tensors(file_paths: List[str]) -> Tuple[torch.Tensor, tor
     healthy_tensors = []
     damaged_tensors = []
 
-    for file_path in file_paths:
+    for file_path in file_paths: # Loops through the unseen validation spectrograms
         # Load and normalize healthy spectrogram
-        raw_spec = np.load(file_path)
-        spec_min, spec_max = raw_spec.min(), raw_spec.max()
-        healthy_spec = (raw_spec - spec_min) / (spec_max - spec_min) if spec_max > spec_min else raw_spec
+        raw_spec = np.load(file_path) # Grabs the healthy spectrograms
+        spec_min, spec_max = raw_spec.min(), raw_spec.max() # Finds min and max values for the current spectrogram
+        healthy_spec = (raw_spec - spec_min) / (spec_max - spec_min) if spec_max > spec_min else raw_spec # Standard Min-Max Normalization
         
         # Generate damaged version
-        damaged_spec = inject_synthetic_damage(healthy_spec)
+        damaged_spec = inject_synthetic_damage(healthy_spec) # Adds noise and masks a frequency band
         
-        healthy_tensors.append(healthy_spec)
-        damaged_tensors.append(damaged_spec)
+        healthy_tensors.append(healthy_spec) # Add the clean, normalized matrix to the "healthy" list
+        damaged_tensors.append(damaged_spec) # Add the degraded twin matrix to the "damaged" list
 
     # Stack into Batches: Shape (Batch, Channel, Height, Width) -> (B, 1, 64, 1000)
     t_healthy = torch.tensor(np.array(healthy_tensors), dtype=torch.float32).unsqueeze(1)

@@ -23,28 +23,45 @@ The HQAE replaces the classical dense bottleneck with a parameterized quantum la
 The 8-dimensional vector produced by the classical convolutional encoder is passed into a Variational Quantum Circuit simulated via PennyLane.
 
 1. **State Preparation (Feature Embedding):**
-   Classical data cannot natively exist inside a quantum processor. The 8-dimensional vector is encoded into the probability amplitudes of an 8-qubit register using **Angle Embedding**. Each classical float dictates the initial rotational phase of a corresponding qubit.
+   * Classical data cannot natively exist inside a quantum processor.
+   * The 8-dimensional vector is encoded into the probability amplitudes of an 8-qubit register using Angle Embedding.
+   * Each classical float dictates the initial rotational phase of a corresponding qubit.
 
 2. **The Ansatz (Parameterized Quantum Circuit):**
-   The core trainable mechanism. It consists of:
-   * **Rotational Gates:** Trainable $R_x(\theta)$, $R_y(\theta)$, and $R_z(\theta)$ gates rotate the state vectors around the Bloch sphere. The classical optimizer updates these angles ($\theta$) via backpropagation.
-   * **Entanglement Topology:** `CNOT` gates create quantum entanglement between the qubits (e.g., via a Ring Topology). This inextricably links the probability amplitudes, theoretically allowing the network to capture spatial correlations between different structural frequencies.
+   * The core trainable mechanism. It consists of:
+      * **Rotational Gates:** 
+         * Trainable $R_x(\theta)$, $R_y(\theta)$ and $R_z(\theta)$ gates rotate the state vectors around the Bloch sphere.
+         * The classical optimizer updates these angles ($\theta$) via backpropagation.
+      * **Entanglement Topology:** 
+         * `CNOT` gates create quantum entanglement between the qubits (eg: via a Ring Topology).
+         * This inextricably links the probability amplitudes $\implies$ theoretically allows the network to capture spatial correlations between different structural frequencies.
 
 3. **Measurement (Expectation Values):**
-   To return the data to the classical decoder, the quantum state must be collapsed. The circuit measures the expectation value of the Pauli-Z operator ($\langle \sigma_z \rangle$) for each qubit. This yields a deterministic, continuous classical vector bounded between $[-1, 1]$, which is then passed to the classical `ConvTranspose2d` decoder.
+   * The quantum state must be collapsed to return the data to the classical decoder.
+   * The circuit measures the expectation value of the Pauli-Z operator ($\langle \sigma_z \rangle$) for each qubit.
+   * This yields a deterministic, continuous classical vector bounded between $[-1, 1]$ $\rightarrow$ which is then passed to the classical `ConvTranspose2d` decoder.
 
-### The Ablation Matrix
-To rigorously isolate the cause of gradient decay, the HQAE is subjected to a two-axis ablation study:
-1. **Entanglement Topology:** Tests spatial coupling mechanisms.
-   * `none`: Zero entanglement (independent independent $R_x$ rotations).
+### The Ablation Matrix (Phase 2 and 3)
+To rigorously isolate the cause of gradient decay and performance limits, the HQAE is subjected to a multi-axis ablation study:
+1. **Entanglement Topology:** Tests spatial coupling mechanisms:
+   * `none`: Zero entanglement (independent $R_x$ rotations).
    * `basic`: Localized ring entanglement.
    * `strong`: Global all-to-all entanglement with generalized 3D Euler rotations.
-2. **Circuit Depth:** Tests the parameterization limits. Evaluated at `Depth 1` (Shallow), `Depth 3` (Intermediate) and `Depth 5` (Deep).
+2. **Circuit Depth:** Tests the parameterization limits (entanglement topology `strong` fixed). Evaluated at:
+   * `Depth 1` (Shallow)
+   * `Depth 3` (Intermediate)
+   * `Depth 5` (Deep)
 
-## 3. Training Protocol & Constraints
+## 3. Evaluation Protocol: Synthetic Anomaly Injection
+Because real-world physical load tests representing high-frequency degradation are unavailable in the baseline 2024 OpenLAB dataset, the architectures are evaluated using synthetic anomaly injection:
+* **Catastrophic Damage:** 30% Gaussian noise and heavy frequency band masking.
+* **Incipient Damage:** 2% Gaussian noise and narrow 2-scale frequency masking to simulate subtle, early-stage micro-cracking.
+Both models are frozen and evaluated on an unseen test set to generate comparative AUC-ROC sensitivities.
+
+## 4. Training Protocol & Constraints
 
 To ensure rigorous academic reproducibility and account for the mathematical realities of current Noisy Intermediate-Scale Quantum (NISQ) algorithms, both models strictly adhere to the following training protocol:
 
 * **Objective Function:** Mean Squared Error (MSE) reconstruction loss.
-* **Optimization Landscape:** Quantum neural networks are highly susceptible to "Barren Plateaus"—regions in the loss landscape where gradients vanish exponentially. To account for this rugged optimization topology, both models are strictly bounded to a **15-Epoch** training phase.
-* **Deterministic Evaluation:** To mitigate initialization bias, the evaluation protocol averages the MSE convergence across **3 distinct deterministic seeds**.
+* **Optimization Landscape:** Quantum neural networks are highly susceptible to "Barren Plateaus" (regions in the loss landscape where gradients vanish exponentially). To account for this rugged optimization topology, both models are strictly bounded to a **15-Epoch** training phase.
+* **Deterministic Evaluation:** To mitigate initialization bias, the evaluation protocol averages the MSE convergence and AUC-ROC scores across an ensemble of **3 distinct deterministic seeds**.

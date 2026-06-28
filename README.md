@@ -28,17 +28,24 @@ SPECTRA-CQ/
 ├── docs/                           # Documentation
 │   ├── ARCHITECTURE.md             # System architecture and design
 │   ├── DATASET.md                  # Dataset characteristics
+│   ├── OPENLAB_DATASET_README.md   # OpenLab dataset details
 │   ├── PIPELINE.md                 # Data processing pipeline
 │   └── RESULTS.md                  # Experiment results and tables
 │
 ├── notebooks/                      # Exploration and execution dashboards
-│   ├── 01_eda_and_cwt.ipynb        # Visualizing raw 70-sec bursts and CWT spectrograms
-│   ├── 02_cae_baseline.ipynb       # Colab execution wrapper for classical baseline
-│   ├── 03_hqae_baseline.ipynb      # Colab execution wrapper for hybrid quantum model
-│   ├── 04a_ablation_topology.ipynb # Ablation: topology experiments
-│   └── 04b_ablation_depth.ipynb    # Ablation: depth experiments
+│   ├── phase1_foundation/          # Phase 1: EDA and Classical Baseline
+│   │   ├── 01_eda_and_cwt.ipynb
+│   │   └── 02_cae_baseline.ipynb
+│   ├── phase2_barren_plaeaus/      # Phase 2: Barren Plateaus analysis
+│   │   ├── 03a_ablation_topology.ipynb
+│   │   └── 03b_ablation_depth.ipynb
+│   └── phase3_quantum_regularization/ # Phase 3: Quantum Regularization models
+│       ├── 04a_ablation_topology.ipynb
+│       ├── 04b_ablation_depth.ipynb
+│       └── 05_synthetic_anomaly_eval.ipynb
 │
 ├── scripts/                        # Execution scripts
+│   ├── evaluate_synthetic.py       # Evaluation script for synthetic anomalies
 │   └── run_experiment.py           # Master script to execute models via YAML configs
 │
 ├── src/                            # Core Source Code
@@ -46,10 +53,12 @@ SPECTRA-CQ/
 │   ├── data/                       # Data pipeline
 │   │   ├── __init__.py
 │   │   ├── dataloader.py
-│   │   └── preprocess.py
+│   │   ├── preprocess.py
+│   │   └── synthetic.py            # Synthetic anomaly generation
 │   │
 │   ├── engine/                     # Training logic and reproducibility
 │   │   ├── __init__.py
+│   │   ├── evaluator.py            # Evaluation logic
 │   │   ├── seed_control.py
 │   │   └── trainer.py
 │   │
@@ -73,6 +82,7 @@ SPECTRA-CQ/
 │       └── viz.py
 │
 ├── study-notes/                    # Research and planning notes
+│
 ├── .gitignore
 ├── README.md
 └── requirements.txt                # Python dependencies (PyTorch, PennyLane, Qiskit)
