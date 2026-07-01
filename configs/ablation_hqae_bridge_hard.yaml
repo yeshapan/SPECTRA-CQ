@@ -1,0 +1,12 @@
+experiment_name: "ablation_hqae_bridge_hard_z_axis"
+data_dir: "/content/local_spectra_data/processed_spectrograms_6ch"
+save_dir: "/content/drive/MyDrive/spectra-cq-data/checkpoints/quantum/bridge_hard"
+seeds: [42, 100, 2026]
+epochs: 15
+batch_size: 32
+learning_rate: 0.001
+train_split: 0.8
+num_sensors: 6
+latent_dim_per_sensor: 2
+n_quantum_layers: 3
+topology: "bridge_graph_hard"

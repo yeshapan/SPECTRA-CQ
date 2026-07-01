@@ -74,7 +74,7 @@ def process_dataset(input_dir: str, output_dir: str, window_size_sec: int = 2, f
     for file_path in tqdm(csv_files, desc="Applying CWT via Morlet Kernel"):
         try:
             # IO Optimization: Load all 6 Z-axis vectors simultaneously. Bypasses timestamp parsing string overhead.
-            # Phase-4 Update: We pass the full TARGET_SENSORS list instead of a single sensor_col
+            # We pass the full TARGET_SENSORS list instead of a single sensor_col
             df = pd.read_csv(file_path, usecols=TARGET_SENSORS)
             df = df.dropna()
             
@@ -89,7 +89,7 @@ def process_dataset(input_dir: str, output_dir: str, window_size_sec: int = 2, f
                 start_idx = i * samples_per_window
                 end_idx = start_idx + samples_per_window
                 
-                # Phase-4 Update: Generate CWT for each sensor and stack them
+                # Generate CWT for each sensor and stack them
                 multi_channel_spec = []
                 for sensor in TARGET_SENSORS:
                     window = raw_signals[sensor][start_idx:end_idx]
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_dir", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
-    # Phase-4 Update: Removed the --sensor argument because we are hardcoding the 6-sensor fusion
+    # Removed the --sensor argument because we are hardcoding the 6-sensor fusion
     parser.add_argument("--window", type=int, default=2)
     args = parser.parse_args()
     

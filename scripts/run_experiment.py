@@ -47,17 +47,28 @@ def main(config_path: str):
             train_split=config["train_split"]
         )
         
+        # Multi-sensor fusion spatial update: 
+        # Parse Siamese parameters to configure the multi-sensor graph layout. 
+        # Fallbacks (1 sensor, 8 latents) ensure strict backwards compatibility with Phase 3 baselines.
+        num_sensors = config.get("num_sensors", 1)
+        latent_dim = config.get("latent_dim", 8)
+        latent_dim_per_sensor = config.get("latent_dim_per_sensor", latent_dim)
+        
         # Dynamically select the architecture based on the config file name
         if "hqae" in config_path.lower():
-            logging.info("Instantiating Hybrid Quantum Autoencoder (HQAE)...")
+            logging.info("Instantiating Hybrid Quantum Autoencoder (HQAE)..")
             model = HybridQuantumAutoencoder(
-                latent_dim=config["latent_dim"], 
+                latent_dim_per_sensor=latent_dim_per_sensor,
+                num_sensors=num_sensors, 
                 n_quantum_layers=config.get("n_quantum_layers", 3),
                 topology=config.get("topology", "basic")
             )
         else:
-            logging.info("Instantiating Classical Autoencoder (CAE)...")
-            model = ClassicalAutoencoder(latent_dim=config["latent_dim"])
+            logging.info("Instantiating Classical Autoencoder (CAE)..")
+            model = ClassicalAutoencoder(
+                latent_dim_per_sensor=latent_dim_per_sensor,
+                num_sensors=num_sensors
+            )
         
         trainer = AutoencoderTrainer(
             model=model,
