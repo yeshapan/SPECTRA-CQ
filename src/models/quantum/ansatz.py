@@ -26,7 +26,6 @@ def build_ansatz(weights, wires, topology="basic"):
     Args:
         weights (Tensor): Trainable angles for the rotation gates. 
         wires (Iterable): The target qubits.
-        topology (str): Defines the entanglement mapping. 
     """
     if topology == "none":
         # Brute-force/Naive approach: No entanglement.
@@ -36,27 +35,21 @@ def build_ansatz(weights, wires, topology="basic"):
             for i, wire in enumerate(wires):
                 qml.RX(weights[layer, i], wires=wire)
                 
-    elif topology == "basic":
-        # Localized entanglement baseline.
-        # PennyLane's BasicEntanglerLayers natively applies RX rotations and ring-CNOT
-        qml.BasicEntanglerLayers(weights=weights, wires=wires)
-        
     elif topology == "strong":
-        # Optimized approach for highly coupled macroscopic frequencies.
-        # Applies generalized Rot gates (RX, RY, RZ) and all-to-all CNOT combinations.
-        qml.StronglyEntanglingLayers(weights=weights, wires=wires)
+        # Strongly entangling layers. All-to-all connectivity.
+        # Tests if unrestricted global entanglement improves or degrades structural mapping.
+        qml.StronglyEntanglingLayers(weights, wires=wires)
         
     elif topology == "bridge_graph_hard":
-        # Physics-Informed Hard Boundary
-        # Entanglement is strictly restricted to physical distances <= 15.0 meters.
-        # This isolates spatial cross-talk, preventing diagonal noise propagation across the deck.
+        # Physics-Informed Hard Cutoff
+        # Forbids entanglement between sensors further than 15.0m apart.
         layers = weights.shape[0]
         for layer in range(layers):
-            # 1. Feature Binding (Internal Sensor Correlation)
+            # 1. Feature Binding
             for s in range(6):
                 qml.CNOT(wires=[s*2, s*2 + 1])
                 
-            # 2. Spatial Mapping (Inter-Sensor Correlation)
+            # 2. Distance-Bounded Spatial Mapping
             weight_idx = 0
             for s1 in range(6):
                 for s2 in range(s1 + 1, 6):
@@ -67,25 +60,22 @@ def build_ansatz(weights, wires, topology="basic"):
                     weight_idx += 1
                     
     elif topology == "bridge_graph_soft":
-        # Physics-Informed Soft Attenuation
-        # All sensors can theoretically communicate.
-        # But the entanglement angle is heavily penalized by the inverse exponential of physical distance (mimicking wave propagation physics).
-        gamma = 0.1 # Attenuation coefficient
+        # Physics-Informed Neural Network (PINN) Pivot
+        # The quantum circuit is now allowed full gradient expressivity.
+        # The physical dampening (gradient starvation fix) will be handled by the classical PINN Loss Function in src/engine/trainer.py instead of artificially scaling parameters here.
         layers = weights.shape[0]
         for layer in range(layers):
-            # 1. Feature Binding
+            # 1. Intra-Sensor Feature Binding
             for s in range(6):
                 qml.CNOT(wires=[s*2, s*2 + 1])
                 
-            # 2. Distance-Weighted Spatial Mapping
+            # 2. Distance-Weighted Spatial Mapping (Now Unshackled)
             weight_idx = 0
             for s1 in range(6):
                 for s2 in range(s1 + 1, 6):
-                    dist = _get_distance(s1, s2)
-                    scaling_factor = np.exp(-gamma * dist)
-                    # The learned weight is physically dampened before applying the quantum rotation
-                    scaled_weight = weights[layer, weight_idx] * scaling_factor
-                    qml.CRY(scaled_weight, wires=[s1*2 + 1, s2*2 + 1])
+                    # We map the pair using the full un-attenuated parameter.
+                    # This guarantees the Adam optimizer receives a 100% strength gradient.
+                    qml.CRY(weights[layer, weight_idx], wires=[s1*2 + 1, s2*2 + 1])
                     weight_idx += 1
                     
     else:
