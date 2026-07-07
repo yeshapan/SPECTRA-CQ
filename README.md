@@ -24,10 +24,27 @@ To ensure statistical stability and reproducibility, especially concerning the p
 ```
 SPECTRA-CQ/
 ├── configs/                        # Configuration management (multiple experiment variants)
+│   ├── ablation_hqae_basic_d1.yaml
+│   ├── ablation_hqae_basic_d3.yaml
+│   ├── ablation_hqae_basic_d5.yaml
+│   ├── ablation_hqae_bridge_hard.yaml
+│   ├── ablation_hqae_bridge_soft.yaml
+│   ├── ablation_hqae_none_d1.yaml
+│   ├── ablation_hqae_none_d3.yaml
+│   ├── ablation_hqae_none_d5.yaml
+│   ├── ablation_hqae_strong_d1.yaml
+│   ├── ablation_hqae_strong_d3.yaml
+│   ├── ablation_hqae_strong_d5.yaml
+│   ├── baseline_cae.yaml
+│   ├── baseline_hqae.yaml
+│   ├── phase4_baseline_cae.yaml
+│   ├── phase4_hqae_ablation_none.yaml
+│   └── phase4_hqae_ablation_strong.yaml
 │
 ├── docs/                           # Documentation
 │   ├── ARCHITECTURE.md             # System architecture and design
 │   ├── DATASET.md                  # Dataset characteristics
+│   ├── IMPLEMENTATION.md
 │   ├── OPENLAB_DATASET_README.md   # OpenLab dataset details
 │   ├── PIPELINE.md                 # Data processing pipeline
 │   └── RESULTS.md                  # Experiment results and tables
@@ -39,10 +56,15 @@ SPECTRA-CQ/
 │   ├── phase2_barren_plaeaus/      # Phase 2: Barren Plateaus analysis
 │   │   ├── 03a_ablation_topology.ipynb
 │   │   └── 03b_ablation_depth.ipynb
-│   └── phase3_quantum_regularization/ # Phase 3: Quantum Regularization models
-│       ├── 04a_ablation_topology.ipynb
-│       ├── 04b_ablation_depth.ipynb
-│       └── 05_synthetic_anomaly_eval.ipynb
+│   ├── phase3_quantum_regularization/ # Phase 3: Quantum Regularization models
+│   │   ├── 04a_ablation_topology.ipynb
+│   │   ├── 04b_ablation_depth.ipynb
+│   │   └── 05_synthetic_anomaly_eval.ipynb
+│   └── phase4_multi_sensor_fusion/
+│       ├── 06_phase4_eda_and_cwt.ipynb
+│       ├── 07a_phase4_baseline_training.ipynb
+│       ├── 07b_phase4_physics_topologies.ipynb
+│       └── 08_phase4_synthetic_anomaly_eval.ipynb
 │
 ├── scripts/                        # Execution scripts
 │   ├── evaluate_synthetic.py       # Evaluation script for synthetic anomalies
@@ -82,6 +104,10 @@ SPECTRA-CQ/
 │       └── viz.py
 │
 ├── study-notes/                    # Research and planning notes
+│   ├── cae-architecture.md
+│   ├── hqae-architecture.md
+│   ├── multi-sensor-fusion.md
+│   └── quantum-concepts.md
 │
 ├── .gitignore
 ├── README.md
