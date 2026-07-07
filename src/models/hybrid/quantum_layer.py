@@ -2,7 +2,11 @@ import torch
 import torch.nn as nn
 import pennylane as qml
 import numpy as np
-from src.models.quantum.vqc import quantum_circuit, N_QUBITS
+
+# We pull embedding and ansatz directly to dynamically compile the QNode 
+# without relying on the hardcoded Phase 4 constraints in vqc.py
+from src.models.quantum.embedding import embed_features
+from src.models.quantum.ansatz import build_ansatz
 
 class VQCTorchLayer(nn.Module):
     """
@@ -10,16 +14,17 @@ class VQCTorchLayer(nn.Module):
     This enables the classical Adam optimizer to calculate gradients and 
     backpropagate them directly through the quantum rotations.
     """
-    def __init__(self, n_layers=3, topology="basic"):
+    def __init__(self, n_layers=3, topology="basic", n_qubits=12):
         super(VQCTorchLayer, self).__init__()
         self.n_layers = n_layers
         self.topology = topology
-        
+        self.n_qubits = n_qubits
+
         # Define the exact parameter shape required by our ansatz
         # StronglyEntanglingLayers requires 3 Euler angles (RX, RY, RZ) per qubit per layer.
         # BasicEntanglerLayers and our naive 'none' approach only require 1 angle (RX).
         if self.topology == "strong":
-            weight_shapes = {"weights": (n_layers, N_QUBITS, 3)}
+            weight_shapes = {"weights": (n_layers, self.n_qubits, 3)}
             # Identity Block Initialization: Required for deep entanglement scrambling
             init_method = {
                 "weights": lambda x: torch.nn.init.normal_(x, mean=0.0, std=0.01)
@@ -37,23 +42,22 @@ class VQCTorchLayer(nn.Module):
             }
 
         else:
-            weight_shapes = {"weights": (n_layers, N_QUBITS)}
+            weight_shapes = {"weights": (n_layers, self.n_qubits)}
             # Non-Zero Initialization: 'none' and 'basic' topologies will suffer absolute zero gradients if initialized near 0 due to sin(0) = 0 derivatives.
             # We use a Uniform distribution to ensure gradients can flow back immediately.
             init_method = {
                 "weights": lambda x: torch.nn.init.uniform_(x, a=-np.pi, b=np.pi)
             }
             
-        # Fix: PennyLane 0.45+ strictly checks the signature.
-        # Create a wrapper to hide the 'topology' argument from the TorchLayer shape checker.
-        def circuit_wrapper(inputs, weights):
-            # .func extracts the raw Python function from your original QNode
-            # This prevents a "QNode-inside-a-QNode" crash while passing the static string
-            return quantum_circuit.func(inputs, weights, topology=self.topology)
-            
-        # Dynamically re-compile the QNode using your original device
-        dynamic_qnode = qml.QNode(circuit_wrapper, quantum_circuit.device)
+        # Dynamically re-compile the QNode using your original device limits
+        dev = qml.device("default.qubit", wires=self.n_qubits)
         
+        @qml.qnode(dev, interface="torch")
+        def dynamic_qnode(inputs, weights):
+            embed_features(inputs, wires=range(self.n_qubits))
+            build_ansatz(weights, wires=range(self.n_qubits), topology=self.topology)
+            return [qml.expval(qml.PauliZ(wires=i)) for i in range(self.n_qubits)]
+            
         # Initialize PennyLane's Torch bridge with the clean signature
         self.vqc = qml.qnn.TorchLayer(
             dynamic_qnode, 

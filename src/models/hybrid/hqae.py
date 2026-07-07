@@ -15,6 +15,9 @@ class HybridQuantumAutoencoder(nn.Module):
         self.num_sensors = num_sensors
         self.latent_dim_per_sensor = latent_dim_per_sensor
         
+        # Calculate qubits dynamically to support both Phase 3 (8) and Phase 4 (12)
+        self.n_qubits = self.num_sensors * self.latent_dim_per_sensor
+        
         # Instantiate the baseline model to rip its classical components
         cae = ClassicalAutoencoder(latent_dim_per_sensor=latent_dim_per_sensor, num_sensors=num_sensors)
         
@@ -25,8 +28,12 @@ class HybridQuantumAutoencoder(nn.Module):
         self.encoder_linear = cae.encoder_linear 
         
         # 3. The Quantum Bottleneck (Replaces the classical latent space)
-        # We now pass the topology parameter down into our custom PyTorch-PennyLane bridge
-        self.quantum_bottleneck = VQCTorchLayer(n_layers=n_quantum_layers, topology=topology)
+        # We pass the dynamic n_qubits down to avoid hardcoded Phase 4 collisions
+        self.quantum_bottleneck = VQCTorchLayer(
+            n_layers=n_quantum_layers, 
+            topology=topology,
+            n_qubits=self.n_qubits
+        )
         
         # 4. Post-Quantum Decompression (Up-projection)
         self.decoder_linear = cae.decoder_linear
@@ -52,10 +59,10 @@ class HybridQuantumAutoencoder(nn.Module):
         x = self.encoder_conv(x)
         x = x.view(x.size(0), -1)  # Flatten dynamically (B*C, C*H*W)
         
-        # Compress to 2-dimensions per sensor
+        # Compress down to latent dimensions per sensor
         x = self.encoder_linear(x)
         
-        # Graph Assembly: Flatten the independent sensor features into the global 12-D space
+        # Graph Assembly: Flatten the independent sensor features into the global quantum space
         x = x.view(B, C * self.latent_dim_per_sensor)
         
         # The Device Bridge
