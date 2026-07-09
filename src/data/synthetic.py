@@ -5,11 +5,11 @@ from typing import List, Tuple
 
 def inject_structural_damage(spectrogram: np.ndarray, mask_width: int = 2, target_sensor_idx: int = 0) -> np.ndarray:
     """
-    Simulates localized structural degradation by masking a dynamic frequency band.
-    Always starts at scale index 45 to represent high-frequency stiffness loss.
+    Simulates localized structural degradation by injecting a high-frequency Acoustic Emission (AE) burst.
+    Always starts at scale index 45 to represent high-frequency energy release from micro-cracking.
     
     Multi-sensor Spatial Update:
-    - The micro-cracking signature (frequency mask) is strictly isolated to a single physical node (default: index 0 / PE11).
+    - The micro-cracking signature (AE burst) is strictly isolated to a single physical node (default: index 0 / PE11).
     - Surrounding sensors remain physically intact.
     - The model must rely on the geometric entanglement of the bridge_graph to detect this spatial anomaly.
     """
@@ -17,16 +17,17 @@ def inject_structural_damage(spectrogram: np.ndarray, mask_width: int = 2, targe
     start_idx = 45
     end_idx = min(start_idx + mask_width, spectrogram.shape[-2]) # Ensure we don't go out of bounds
     
-    # Frequency Band Masking (Strictly Localized)
+    # Frequency Band Masking (Acoustic Emission Burst)
+    # We inject a 1.0 (max normalized energy) to simulate the physical snap of a crack.
     # The anomaly is mathematically confined to the target physical node `PE11` if multi-channel (Phase 4) or applied globally if single-channel (Phase 3)
     if damaged_spec.shape[0] == 6:
-        damaged_spec[target_sensor_idx, start_idx:end_idx, :] = 0.0
+        damaged_spec[target_sensor_idx, start_idx:end_idx, :] = 1.0
     else:
         # Fallback for Phase 3 (1, 64, 1000) or (64, 1000)
         if damaged_spec.ndim == 3:
-            damaged_spec[0, start_idx:end_idx, :] = 0.0
+            damaged_spec[0, start_idx:end_idx, :] = 1.0
         else:
-            damaged_spec[start_idx:end_idx, :] = 0.0
+            damaged_spec[start_idx:end_idx, :] = 1.0
             
     return damaged_spec
 
@@ -61,7 +62,7 @@ def prepare_evaluation_tensors(file_paths: List[str], damage_width: int = 2) -> 
         spec_min, spec_max = raw_spec.min(), raw_spec.max() 
         healthy_spec = (raw_spec - spec_min) / (spec_max - spec_min) if spec_max > spec_min else raw_spec
         
-        # 2. Apply localized damage to the healthy state
+        # 2. Apply localized damage to the healthy state (AE Burst injection)
         damaged_unnorm = inject_structural_damage(healthy_spec, mask_width=damage_width)
         
         # 3. Normalize the damaged state -> This is our True Damaged State

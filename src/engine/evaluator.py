@@ -22,7 +22,7 @@ class AnomalyEvaluator:
         """
         Passes the dataset through the frozen architecture and returns the anomaly scores.
         
-        The score is defined as the Max Spatial Reconstruction Error (MSE).
+        The score is defined as the Global Mean Spatial Reconstruction Error (MSE).
         """
         dataset = torch.utils.data.TensorDataset(data_tensor)
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
@@ -38,11 +38,12 @@ class AnomalyEvaluator:
                 # Tensor shape: (Batch, Channels, Height, Width) -> e.g., (32, 6, 64, 1000)
                 loss = self.criterion(outputs, inputs)
                 
-                # CRITICAL FIX: The Spatial Dilution Problem
-                # Calculate mean MSE *per sensor* (dim 2 and 3), then take the MAX across sensors (dim 1)
-                # This prevents healthy sensors from mathematically diluting the anomaly of a broken sensor.
-                sensor_mse = loss.mean(dim=(2, 3))     # Shape: (B, C)
-                sample_mse, _ = sensor_mse.max(dim=1)  # Shape: (B,)
+                # CRITICAL FIX: The Acoustic Emission Pivot
+                # Because the AE burst (1.0) is a massive energy spike, it easily survives global averaging.
+                # We use global mean here to flatten the tensor and average across all dimensions,
+                # effectively bypassing the "Noisy Neighbor" paradox where one naturally noisy sensor 
+                # dictates the max error pool.
+                sample_mse = loss.view(inputs.size(0), -1).mean(dim=1)
                 
                 # Move back to CPU for Scikit-Learn AUC calculations
                 all_scores.extend(sample_mse.cpu().numpy())
