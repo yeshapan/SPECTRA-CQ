@@ -1,0 +1,12 @@
+experiment_name: "phase3_dim2_hqae_none"
+data_dir: "/content/local_spectra_data/processed_spectrograms_PE11"
+save_dir: "/content/drive/MyDrive/spectra-cq-data/checkpoints_phase3_PE11/dim2/quantum/none_d3"
+seeds: [42, 100, 2026]
+epochs: 15
+batch_size: 32
+learning_rate: 0.001
+train_split: 0.8
+latent_dim_per_sensor: 2
+num_sensors: 1
+n_quantum_layers: 3
+topology: "none"
