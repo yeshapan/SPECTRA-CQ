@@ -45,7 +45,7 @@ $$|\alpha|^2 + |\beta|^2 = 1$$
 * When a quantum computer is "idle" $\rightarrow$ the qubits generally rest at the North pole ( $|0\rangle$ )
 * To encode classical data or process information, we use quantum gates to rotate that vector around the $X$, $Y$, or $Z$ axes of this sphere.
 
-![Basic Hilbert Space vs Bloch Sphere](assets/hilbert-space-vs-bloch-sphere.png)
+![Basic Hilbert Space vs Bloch Sphere](./assets/hilbertSpacevsblochshpere.png)
 
 ### **NOTE: Superposition**
 Core idea $\rightarrow$ superposition is the quantum mechanical principle that allows a system to exist in multiple states simultaneously until it is measured

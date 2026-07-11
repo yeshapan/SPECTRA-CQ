@@ -24,6 +24,9 @@ Through Min-Max normalization, every single energy value is bounded between `0.0
 ### **Pre-Note: What is an Autoencoder?**
 Autoencoder is an unsupervised neural network.
 
+![Convolutional AutoEncoder Overview Diagram](./assets/convolutional-autoencoder-diagram.webp)
+*Figure: Overview diagram of a standard RGB Convolutional Autoencoder $\uparrow$*
+
 **Intuitive Walkie-Talkie Analogy:**
 Imagine you have a highly detailed CAD blueprint of a bridge and you need to send it to your colleague. But you only have a walkie-talkie. You cannot transmit the entire drawing.
 
@@ -40,8 +43,9 @@ In SHM, we only train the autoencoder on **healthy** bridge data.
 * A standard Continuous Wavelet Transform (CWT) output in our pipeline represents a 2-second vibration burst.
 * The shape is $(64, 1000)$ $\rightarrow$ $64$ log-spaced frequency scales (0.5 Hz to 100 Hz) and $1,000$ time steps (500 Hz sampling rate).
 * Total features per sample $\rightarrow$ $64 \times 1000 = 64,000$ classical floating-point values.
-* **The Goal**: To aggressively compress these $64,000$ features down to exactly $8$ continuous values. 
-* **Why 8?** Because current NISQ-era quantum simulators (for HQAE) cannot handle massive qubit counts without simulation times exploding. An 8-qubit bottleneck requires exactly 8 classical input features.
+* **The Goal**: To aggressively compress these $64,000$ features down to a severe representational bottleneck (either $8$ or $2$ continuous values, depending on the phase).
+* **Phase 1, 2 and 3 (Unconstrained Baseline):** Compressed to 8 dimensions.
+* **Phase 3 and 4 (Capacity Constraint):** Violently compressed to exactly **2 dimensions** per sensor. This simulates the strict simulation limits of Noisy Intermediate-Scale Quantum (NISQ) devices when scaled to a multi-sensor graph.
 
 ## **Architecture of CAE**
 ### **1. The Spatial Encoder (Compression)**
@@ -62,26 +66,26 @@ After passing through the Convolutional and Pooling layers, our massive `(1, 64,
 
 If we unroll these maps into a single flat line $\rightarrow$ we get 6,400 numbers. 
 
-We then pass these 6,400 numbers through a `Linear` layer (a standard, fully connected neural network layer) that forces them down into just 8 continuous numbers.
+We then pass these 6,400 numbers through a `Linear` layer (a standard, fully connected neural network layer) that forces them down into just 8 (or 2) continuous numbers.
 
 **Why extreme compression?**
-This is the "walkie-talkie" restriction. By forcing 64,000 original data points ($64 \times 1000$) down to just 8 numbers $\rightarrow$ we force the network to discard everything except the absolute most mathematically critical components of the bridge's structural behavior.
+This is the "walkie-talkie" restriction. By forcing 64,000 original data points ($64 \times 1000$) down to just 8 or 2 numbers $\rightarrow$ we force the network to discard everything except the absolute most mathematically critical components of the bridge's structural behavior.
 
-These 8 numbers are the "Latent Vector" $\leftarrow$ the fundamental mathematical DNA of the concrete's integrity.
+These numbers are the "Latent Vector" $\leftarrow$ the fundamental mathematical DNA of the concrete's integrity.
 
-*Note: In Phase 4, this exact classical bottleneck is violently ripped out and replaced by the 8-Qubit Variational Quantum Circuit.*
+*Note: In Phase 4, this exact classical bottleneck is violently ripped out and replaced by the Variational Quantum Circuit.*
 
 ### **3. The Spatial Decoder (Reconstruction)**
 * Transpose Convolution (`ConvTranspose2d`)
     * Also called "deconvolution" 
     * This is the mathematical reverse of the spatial encoder.
     * It takes the dense, compressed features and projects them back outward into a larger spatial grid. 
-    * Learns how to "paint" the specific frequency bands back into their correct time slots based on the 8-number summary.
+    * Learns how to "paint" the specific frequency bands back into their correct time slots based on the summary.
 
 * Terminal Sigmoid Activation
     * The final layer of the network applies a mathematical `Sigmoid` function.
     * This guarantees all output values are squashed strictly between `0.0` and `1.0`. 
-    * Input energy values were also normalized to this exact same range $\implies$ we can mathematically compare Input andOutput pixel-by-pixel to calculate the reconstruction error.
+    * Input energy values were also normalized to this exact same range $\implies$ we can mathematically compare Input and Output pixel-by-pixel to calculate the reconstruction error.
 
 ### **4. Loss Function & Optimization Landscape**
 * **Objective**: Mean Squared Error (MSE).
@@ -89,7 +93,7 @@ These 8 numbers are the "Latent Vector" $\leftarrow$ the fundamental mathematica
     * Where $Y$ is the original CWT matrix, and $\hat{Y}$ is the reconstructed matrix.
 * **Why not Cross-Entropy?** We are not doing discrete classification (e.g., Cat vs. Dog). We are reconstructing continuous signal amplitudes.
 * **The Optimization Strategy (`Adam`)**: 
-    * The optimization landscape of an 8-dimensional bottleneck is extremely sharp.
+    * The optimization landscape of a heavily bottlenecked latent space is extremely sharp.
     * Standard Stochastic Gradient Descent (SGD) would likely get stuck.
     * `Adam` dynamically adapts the learning rate for each individual parameter based on the first and second moments of the gradients, allowing the network to navigate narrow ravines in the loss landscape.
 
@@ -124,11 +128,11 @@ Below is the exact flow of tensor dimensionality and the explicit PyTorch layer 
 **3. The Classical Bottleneck (Latent Space)**
 * Operation: `x.view(x.size(0), -1)` (Dynamic Flattening)
   * Shape Mutated: $\rightarrow$ `(B, 6400)`
-* Layer: `nn.Linear(in_features=6400, out_features=8)`
-  * Shape Mutated: $\rightarrow$ `(B, 8)` (This is the 8-dimensional Continuous Latent Vector)
+* Layer: `nn.Linear(in_features=6400, out_features=latent_dim)`
+  * Shape Mutated: $\rightarrow$ `(B, 8)` or `(B, 2)` (This is the Dynamic Continuous Latent Vector)
 
 **4. Spatial Decoding (Reconstruction)**
-* Layer: `nn.Linear(in_features=8, out_features=6400)`
+* Layer: `nn.Linear(in_features=latent_dim, out_features=6400)`
   * Shape Mutated: $\rightarrow$ `(B, 6400)`
 * Operation: `x.view(x.size(0), 32, 8, 25)` (Dynamic Reshaping)
   * Shape Mutated: $\rightarrow$ `(B, 32, 8, 25)`
