@@ -28,12 +28,12 @@ class ClassicalAutoencoder(nn.Module):
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(),
-            # Pool2: Reduces time/freq -> (B*C, 32, 8, 125) (kernel 4x2)
-            nn.MaxPool2d(kernel_size=(4, 2), stride=(4, 2))
+            # Pool2: Reduces time/freq -> (B*C, 32, 8, 25) (kernel 4x10)
+            nn.MaxPool2d(kernel_size=(4, 10), stride=(4, 10))
         )
         
-        # 32 channels * 8 height * 125 width
-        self.flatten_size = 32 * 8 * 125 
+        # 32 channels * 8 height * 25 width
+        self.flatten_size = 32 * 8 * 25 
         
         self.encoder_linear = nn.Linear(self.flatten_size, self.latent_dim_per_sensor)
         self.decoder_linear = nn.Linear(self.latent_dim_per_sensor, self.flatten_size)
@@ -76,7 +76,7 @@ class ClassicalAutoencoder(nn.Module):
         x = self.decoder_linear(x)
         
         # Reshape for transpose convolutions using dynamic B*C batch sizing
-        x = x.view(x.size(0), 32, 8, 125) 
+        x = x.view(x.size(0), 32, 8, 25) 
         
         x = self.decoder_conv(x)
         

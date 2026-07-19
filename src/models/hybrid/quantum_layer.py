@@ -15,7 +15,7 @@ class VQCTorchLayer(nn.Module):
     backpropagate them directly through the quantum rotations.
     """
     def __init__(self, n_layers=3, topology="basic", n_qubits=12):
-        super(VQCTorchLayer, self).__init__()
+        super().__init__() # Modern + safe syntax to avoid namespace reload errors
         self.n_layers = n_layers
         self.topology = topology
         self.n_qubits = n_qubits

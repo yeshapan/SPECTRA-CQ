@@ -92,7 +92,7 @@ class HybridQuantumAutoencoder(nn.Module):
         x = self.decoder_linear(x)
         
         # Reshape for transpose convolutions using dynamic batch sizing
-        x = x.view(x.size(0), 32, 8, 125) 
+        x = x.view(x.size(0), 32, 8, 25) 
         
         x = self.decoder_conv(x)
         

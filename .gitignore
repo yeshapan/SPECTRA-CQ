@@ -39,3 +39,5 @@ __pycache__/
 *.pt
 *.pth
 models/saved_weights/
+
+auc-roc-imgs/
