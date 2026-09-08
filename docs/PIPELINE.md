@@ -39,8 +39,8 @@ The Classical Convolutional Autoencoder (CAE) processes the matrices once loaded
     * The tensor is passed through a deep stack of `Conv2d` and `MaxPool2d` layers, sequentially flattening the spatial matrix into 6,400 classical features per sensor.
 3. **The Capacity Bottleneck (Divergence):**
     * A purely linear dense layer violently compresses the 6,400 features. 
-    * **Phases 1, 2 and 3 (initial ablations):** Unconstrained representation $\rightarrow$ compressed to an 8-dimensional continuous vector (`dim=8`).
-    * **Phases 3 and 4:** Capacity-constrained baseline $\rightarrow$ severely suffocated down to a 2-dimensional continuous vector (`dim=2`).
+    * **Phases 1, 2 and 3 (initial ablations):** Unconstrained representation $\rightarrow$ compressed to an 8-dimensional continuous vector (`dim=8`) for single-sensor (`PE11`) ablations.
+    * **Phases 3 and 4:** Capacity-constrained baseline $\rightarrow$ severely suffocated down to a 2-dimensional continuous vector (`dim_per_sensor=2`).
 4. **Spatial Reconstruction (Decoder):**
     * The latent vectors are projected back up to 6,400 features, passed through `ConvTranspose2d` layers, and utilize a `Sigmoid` activation to output the predicted bounded reconstruction.
 5. **Siamese Unfolding:**

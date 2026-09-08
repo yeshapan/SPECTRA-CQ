@@ -9,7 +9,7 @@ The SPECTRA-CQ project follows a progressive, four-phase architectural evolution
 **Objective:** Establish a high-performance classical architecture to benchmark quantum models against.
 * **Input:** 2D energy density spectrograms from a single accelerometer (`PE11`). Shape: `(1, 64, 1000)`.
 * **Model:** Convolutional Autoencoder (CAE).
-* **Compression:** Unconstrained (`dim=8`). The network reduces the 64,000-dimensional input into a dense, 8-dimensional continuous latent vector.
+* **Compression:** Unconstrained (`dim=8`) for single-sensor (`PE11`) ablations. The network reduces the 64,000-dimensional input into a dense, 8-dimensional continuous latent vector.
 * **Performance:** Converged to a highly accurate Validation MSE of `~0.0089`, demonstrating that standard deep learning can effectively map baseline structural vibrations given sufficient capacity.
 
 ## Phase 2: Single-Sensor Quantum Autoencoder

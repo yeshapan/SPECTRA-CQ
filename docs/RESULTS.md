@@ -82,7 +82,7 @@ In physical structural health monitoring (SHM), this duration correlates directl
     * A massive, sustained energy release that radically alters the localized vibration signature of the girder.
 
 ### Phase 3 Synthetic Damage Evaluation Metrics (AUC-ROC ± Std Dev)
-**Configuration:** Single Sensor (`PE11`), Capacity `dim=2`, Acoustic Emission (AE) Amplitude `0.35`
+**Configuration:** Single Sensor (`PE11`), Capacity `dim_per_sensor=2`, Acoustic Emission (AE) Amplitude `0.35`
 
 | Damage Severity (Mask Width) | CAE Baseline | HQAE [None] | HQAE [Strong] |
 | :---: | :---: | :---: | :---: |
@@ -95,7 +95,7 @@ In physical structural health monitoring (SHM), this duration correlates directl
 
 ### Scientific Inferences
 #### 1. The Capacity-Constrained Sensitivity Floor
-By enforcing a strict `dim=2` latent capacity constraint, the single-sensor models were starved of representational capacity $\implies$ resulted in a higher, "blurrier" baseline Mean Squared Error (~0.015). 
+By enforcing a strict `dim_per_sensor=2` latent capacity constraint, the single-sensor models were starved of representational capacity $\implies$ resulted in a higher, "blurrier" baseline Mean Squared Error (~0.015). 
 * **Classical Autoencoder (CAE):** 
     * Achieved a baseline AUC of **0.620** at incipient damage (Mask Width 2)
     * Scaled up to **0.819** at severe damage (Mask Width 8).
@@ -115,11 +115,11 @@ A single node cannot detect incipient damage without triggering false positives.
 
 To overcome the physical limits observed in Phase 3, the architecture was transitioned to ingest 6 synchronized telemetry nodes simultaneously. This phase evaluates if quantum entanglement (`CNOT`/`CRY` gates) can effectively map complex multi-dimensional spatial correlations across a physical graph.
 
-The Phase 4 evaluation forced the multi-sensor spatial architectures through the exact same `dim=2` per-sensor compression bottleneck tested in Phase 3.
+The Phase 4 evaluation forced the multi-sensor spatial architectures through the exact same `dim_per_sensor=2` compression bottleneck tested in Phase 3.
 The results empirically validate the limits of classical spatial fusion, quantum scaling and physics-informed constraints.
 
 ### Phase 4 Synthetic Damage Evaluation Metrics (AUC-ROC ± Std Dev)
-**Configuration:** 6-Sensor Spatial Graph, Capacity `dim=2` per sensor, Target Anomaly at `PE11`, Acoustic Emission (AE) Amplitude `0.35`
+**Configuration:** 6-Sensor Spatial Graph, Capacity `dim_per_sensor=2`, Target Anomaly at `PE11`, Acoustic Emission (AE) Amplitude `0.35`
 
 | Damage Severity (Mask Width) | CAE Baseline | HQAE [None] | HQAE [Strong] | HQAE [Bridge Hard] | HQAE [Bridge Soft / PINN] |
 | :---: | :---: | :---: | :---: | :---: | :---: |

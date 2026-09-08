@@ -4,7 +4,7 @@
 ![PennyLane](https://img.shields.io/badge/PennyLane-000000?style=for-the-badge&logo=penny-lane&logoColor=white)
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=white)
 
-**SPECTRA-CQ** is a machine learning research repository dedicated to anomaly detection in Structural Health Monitoring (SHM) for bridge.
+**SPECTRA-CQ** is a machine learning research repository dedicated to incipient anomaly detection in Structural Health Monitoring (SHM) for bridge.
 
 This project leverages data from the openLAB research bridge to evaluate and benchmark the performance of Classical Convolutional Autoencoders against Hybrid Quantum Autoencoders (HQAE) for identifying structural degradation.
 
@@ -29,7 +29,7 @@ This dataset is available at [10.25532/OPARA-660](https://doi.org/10.25532/OPARA
 To ensure statistical stability and reproducibility, all training loops and benchmark evaluations adhere strictly to a rigorous evaluation methodology:
 * **Seed Locking:** A strictly enforced **3-seed** initialization protocol ensures reproducibility across classical PyTorch and highly stochastic PennyLane quantum state-vector simulators.
 * **Epoch Restraint:** Training is locked to **15 epochs** to mitigate multi-channel convolutional overfitting and account for rapid quantum convergence.
-* **The Compression Bottleneck:** Multi-sensor spatial models are strictly constrained to a `dim=2` per-sensor capacity bottleneck, enforcing a 1-to-1 parity between classical latent spaces and the maximum representational capacity of a 2-qubit register.
+* **The Compression Bottleneck:** Multi-sensor spatial models are strictly constrained to a `dim_per_sensor=2` capacity bottleneck, enforcing a 1-to-1 parity between classical latent spaces and the maximum representational capacity of a 2-qubit register.
 * **Incipient Anomaly Proxy:** Evaluated against an Acoustic Emission burst (Amplitude = $0.35$) using Target Node Isolation to mathematically simulate early-stage micro-cracking.
 
 ---
